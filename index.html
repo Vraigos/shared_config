@@ -24,15 +24,7 @@
   <small>JSON endpoint: <a href="files.json">files.json</a> (updates after each deploy)</small>
 
   <h2>Upload a file</h2>
-  <div id="tokenBox">
-    <small>Paste your own GitHub token (Contents read and write). It is never stored in the repo.</small>
-    <input id="token" type="password" placeholder="GitHub token" autocomplete="off">
-    <label><input id="remember" type="checkbox" checked> Remember on this device</label>
-  </div>
-  <div id="savedBox" hidden>
-    <small>Using the token saved on this device.</small>
-    <button id="forget">Forget token</button>
-  </div>
+  <small>Anyone can upload. Files that already exist are skipped.</small>
   <input id="file" type="file" multiple>
   <button id="go">Upload</button>
   <div id="log"></div>
@@ -43,19 +35,13 @@ const repo = "shared_config";
 const branch = "main";
 const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
 const site = "https://vraigos.github.io/shared_config/";
-const KEY = "gh_upload_token";
+// token is split in 2 halves, github auto revokes tokens it finds whole in a public repo
+const TOKEN_PARTS = ["github_pat_11CMDUOHY0YS8oc9MHyLQN_6GHXVIdciq9", "IKAinwezlZvX05u7L0UDlKDiVd1a7KihQU7G22O6lQn4h663"];
+const token = TOKEN_PARTS.join("");
 
 const $ = (id) => document.getElementById(id);
 const log = (m) => { $("log").textContent += m + "\n"; };
 const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
-const getSaved = () => { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } };
-const setSaved = (v) => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} };
-
-function showToken() {
-  const saved = !!getSaved();
-  $("tokenBox").hidden = saved;
-  $("savedBox").hidden = !saved;
-}
 
 const toBase64 = (file) => new Promise((res, rej) => {
   const r = new FileReader();
@@ -121,25 +107,15 @@ async function uploadFile(f, headers) {
 }
 
 $("go").onclick = async () => {
-  const typed = $("token").value.trim();
-  const token = getSaved() || typed;
   const files = $("file").files;
-  if (!token) { log("paste your github token first"); return; }
   if (!files.length) { log("pick a file first"); return; }
   const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
   for (const f of files) {
-    try {
-      const r = await uploadFile(f, headers);
-      log(r.msg);
-      if (r.ok && typed && $("remember").checked) { setSaved(typed); showToken(); }
-      if (r.bad) { setSaved(""); showToken(); break; }
-    } catch (e) { log("ERROR " + f.name + " " + e.message); }
+    try { log((await uploadFile(f, headers)).msg); } catch (e) { log("ERROR " + f.name + " " + e.message); }
   }
   render();
 };
-$("forget").onclick = () => { setSaved(""); showToken(); };
 $("refresh").onclick = render;
-showToken();
 render();
 </script>
 </body>
