@@ -3,8 +3,8 @@ main = "worker.js"
 compatibility_date = "2024-11-01"
 
 [vars]
-OWNER = "YOUR_GITHUB_USERNAME"
-REPO = "YOUR_REPO_NAME"
+OWNER = "Vraigos"
+REPO = "shared_config"
 BRANCH = "main"
-# origin only, no path and no trailing slash
-ALLOWED_ORIGIN = "https://YOUR_GITHUB_USERNAME.github.io"
+
+ALLOWED_ORIGIN = "https://Vraigos.github.io"
