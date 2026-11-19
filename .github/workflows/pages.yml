@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: build file list endpoint
         run: |
-          find uploads -type f ! -name '.gitkeep' -printf '%f\t%s\n' | sort | jq -R -s 'split("\n") | map(select(length>0) | split("\t") | {name: .[0], size: (.[1]|tonumber), url: ("uploads/" + (.[0]|@uri))})' > files.json
+          find uploads -type f ! -name '.gitkeep' -printf '%P\t%s\n' | sort | jq -R -s 'split("\n") | map(select(length>0) | split("\t") | {name: (.[0] | split("/") | last), path: .[0], size: (.[1]|tonumber), url: ("uploads/" + (.[0] | split("/") | map(@uri) | join("/")))})' > files.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

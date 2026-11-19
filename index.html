@@ -1,47 +1,153 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Files</title>
+<title>Shared Files</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 16px; }
-  input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
-  label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-  label input { width: auto; margin: 0; }
-  #log { white-space: pre-wrap; margin: 16px 0; }
-  ul { list-style: none; padding: 0; }
-  li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #8884; }
-  li a { overflow-wrap: anywhere; }
-  li span { white-space: nowrap; opacity: .7; }
-  small { opacity: .7; }
+  :root { --bg:#f6f7f9; --card:#fff; --text:#16181d; --muted:#6b7280; --line:#e5e7eb; --accent:#4f46e5; --accent-fg:#fff; --ok:#16a34a; --bad:#dc2626; --warn:#d97706; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --line:#272b33; --accent:#818cf8; --accent-fg:#0f1115; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:680px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; font-size:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:20px; }
+  .card h2 { font-size:15px; margin:0 0 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .drop { border:2px dashed var(--line); border-radius:12px; padding:28px 16px; text-align:center; cursor:pointer; transition:.15s; color:var(--muted); }
+  .drop:hover, .drop.over { border-color:var(--accent); color:var(--text); background:color-mix(in srgb,var(--accent) 8%,transparent); }
+  .drop b { color:var(--accent); }
+  .drop input { display:none; }
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--text); border-radius:8px; padding:6px 12px; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); width:100%; padding:10px; margin-top:12px; font-weight:600; }
+  button:disabled { opacity:.5; cursor:default; }
+  .queue { list-style:none; margin:12px 0 0; padding:0; }
+  .queue li { padding:8px 0; border-bottom:1px solid var(--line); }
+  .row { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .name { overflow-wrap:anywhere; }
+  .meta { color:var(--muted); font-size:13px; white-space:nowrap; }
+  .bar { height:5px; background:var(--line); border-radius:3px; margin-top:6px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--accent); transition:width .1s; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  input[type=search] { width:100%; font:inherit; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--text); margin-bottom:8px; }
+  .files { list-style:none; margin:0; padding:0; }
+  .files li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .files li:last-child { border-bottom:0; }
+  .files a { color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
+  .files a:hover { color:var(--accent); text-decoration:underline; }
+  .files .dir { color:var(--muted); font-size:12px; display:block; }
+  .actions { display:flex; align-items:center; gap:10px; }
+  .empty { color:var(--muted); text-align:center; padding:16px 0; }
+  .endpoint { font-size:13px; color:var(--muted); }
+  .endpoint a { color:var(--accent); }
 </style>
 </head>
 <body>
-  <h2>Files</h2>
-  <button id="refresh">Refresh list</button>
-  <ul id="list"></ul>
-  <small>JSON endpoint: <a href="files.json">files.json</a> (updates after each deploy)</small>
+<main>
+  <h1>Shared Files</h1>
+  <p class="sub">Upload a file and get a public link. No account or token needed. Existing files are never overwritten.</p>
 
-  <h2>Upload a file</h2>
-  <small>Anyone can upload. Files that already exist are skipped.</small>
-  <input id="file" type="file" multiple>
-  <button id="go">Upload</button>
-  <div id="log"></div>
+  <section class="card">
+    <h2>Upload</h2>
+    <label class="drop" id="drop">
+      <input id="file" type="file" multiple>
+      <div><b>Choose files</b> or drag them here</div>
+      <div class="meta" id="limit"></div>
+    </label>
+    <ul class="queue" id="queue"></ul>
+    <button class="primary" id="go" disabled>Upload</button>
+  </section>
+
+  <section class="card">
+    <h2><span>Files <span class="meta" id="count"></span></span><button id="refresh">Refresh</button></h2>
+    <input type="search" id="q" placeholder="Search files">
+    <ul class="files" id="list"></ul>
+  </section>
+
+  <p class="endpoint">API: <a href="endpoint.json">endpoint.json</a> (upload) · <a href="files.json">files.json</a> (list)</p>
+</main>
 
 <script>
-const owner = "vraigos";
-const repo = "shared_config";
-const branch = "main";
-const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
-const site = "https://vraigos.github.io/shared_config/";
-// token is split in 2 halves, github auto revokes tokens it finds whole in a public repo
-const TOKEN_PARTS = ["github_pat_11CMDUOHY0YS8oc9MHyLQN_6GHXVIdciq9", "IKAinwezlZvX05u7L0UDlKDiVd1a7KihQU7G22O6lQn4h663"];
-const token = TOKEN_PARTS.join("");
-
 const $ = (id) => document.getElementById(id);
-const log = (m) => { $("log").textContent += m + "\n"; };
 const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
+const encPath = (p) => p.split("/").map(encodeURIComponent).join("/");
+
+let cfg = null, all = [], queue = [];
+
+async function loadConfig() {
+  const res = await fetch("endpoint.json", { cache: "no-store" });
+  if (!res.ok) throw new Error("endpoint.json " + res.status);
+  cfg = await res.json();
+  cfg.token = cfg.token_parts.join("");
+  $("limit").textContent = "Max " + fmt(cfg.max_bytes) + " per file";
+}
+
+async function listFiles() {
+  const [o, r] = cfg.repo.split("/");
+  try {
+    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/git/trees/${cfg.branch}?recursive=1&t=${Date.now()}`,
+      { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+    if (!res.ok) throw new Error("api " + res.status);
+    const t = await res.json();
+    return t.tree.filter((i) => i.type === "blob" && i.path.startsWith("uploads/") && !i.path.endsWith(".gitkeep"))
+      .map((i) => ({ path: i.path.slice(8), size: i.size, url: cfg.site + encPath(i.path) }));
+  } catch (e) {
+    const res = await fetch("files.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("list failed");
+    return (await res.json()).map((f) => ({ path: f.path || f.name, size: f.size, url: cfg.site + f.url }));
+  }
+}
+
+function renderList() {
+  const ul = $("list"), term = $("q").value.trim().toLowerCase();
+  ul.textContent = "";
+  const files = all.filter((f) => f.path.toLowerCase().includes(term));
+  $("count").textContent = all.length ? "(" + all.length + ")" : "";
+  if (!files.length) { const d = document.createElement("div"); d.className = "empty"; d.textContent = all.length ? "No match" : "No files yet"; ul.append(d); return; }
+  for (const f of files) {
+    const li = document.createElement("li");
+    const left = document.createElement("div");
+    const a = document.createElement("a");
+    const i = f.path.lastIndexOf("/");
+    a.href = f.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = f.path.slice(i + 1);
+    left.append(a);
+    if (i > -1) { const d = document.createElement("span"); d.className = "dir"; d.textContent = f.path.slice(0, i); left.append(d); }
+    const right = document.createElement("div"); right.className = "actions";
+    const s = document.createElement("span"); s.className = "meta"; s.textContent = fmt(f.size);
+    const c = document.createElement("button"); c.textContent = "Copy link";
+    c.onclick = async () => { try { await navigator.clipboard.writeText(f.url); c.textContent = "Copied"; } catch { c.textContent = "Failed"; } setTimeout(() => c.textContent = "Copy link", 1200); };
+    right.append(s, c);
+    li.append(left, right);
+    ul.append(li);
+  }
+}
+
+async function refresh() {
+  $("list").textContent = "";
+  try { all = (await listFiles()).sort((a, b) => a.path.localeCompare(b.path)); renderList(); }
+  catch (e) { $("list").textContent = "ERROR " + e.message; }
+}
+
+function renderQueue() {
+  const ul = $("queue"); ul.textContent = "";
+  for (const item of queue) {
+    const li = document.createElement("li");
+    const row = document.createElement("div"); row.className = "row";
+    const n = document.createElement("span"); n.className = "name"; n.textContent = item.file.name;
+    item.status = document.createElement("span"); item.status.className = "meta"; item.status.textContent = fmt(item.file.size);
+    row.append(n, item.status);
+    const bar = document.createElement("div"); bar.className = "bar";
+    item.bar = document.createElement("i"); bar.append(item.bar);
+    li.append(row, bar); ul.append(li);
+  }
+  $("go").disabled = !queue.length;
+}
+
+function addFiles(list) {
+  queue = [...queue, ...[...list].map((file) => ({ file }))];
+  renderQueue();
+}
 
 const toBase64 = (file) => new Promise((res, rej) => {
   const r = new FileReader();
@@ -50,73 +156,58 @@ const toBase64 = (file) => new Promise((res, rej) => {
   r.readAsDataURL(file);
 });
 
-// LIST: reads the public repo, no token needed
-async function listFiles() {
-  try {
-    const res = await fetch(api + "uploads?ref=" + branch + "&t=" + Date.now(), {
-      headers: { Accept: "application/vnd.github+json" }, cache: "no-store"
-    });
-    if (res.status === 404) return [];
-    if (!res.ok) throw new Error("api " + res.status);
-    const items = await res.json();
-    return items
-      .filter((i) => i.type === "file" && i.name !== ".gitkeep")
-      .map((i) => ({ name: i.name, size: i.size, url: site + "uploads/" + encodeURIComponent(i.name) }));
-  } catch (e) {
-    const res = await fetch("files.json", { cache: "no-store" });
-    if (!res.ok) throw new Error("list failed");
-    return await res.json();
-  }
+function setState(item, text, cls, pct) {
+  item.status.textContent = text; item.status.className = "meta " + (cls || "");
+  if (pct != null) item.bar.style.width = pct + "%";
 }
 
-async function render() {
-  const ul = $("list");
-  ul.textContent = "";
-  try {
-    const files = await listFiles();
-    if (!files.length) { ul.textContent = "no files yet"; return; }
-    for (const f of files) {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.href = f.url; a.textContent = f.name; a.target = "_blank"; a.rel = "noopener";
-      const s = document.createElement("span");
-      s.textContent = fmt(f.size);
-      li.append(a, s);
-      ul.append(li);
-    }
-  } catch (e) {
-    ul.textContent = "ERROR " + e.message;
-  }
-}
-
-// UPLOAD: create only, never overwrites
-async function uploadFile(f, headers) {
-  const path = "uploads/" + encodeURIComponent(f.name);
-  const check = await fetch(api + path + "?ref=" + branch, { headers, cache: "no-store" });
-  if (check.status === 200) return { msg: "SKIPPED " + f.name + " already exists" };
-  if (check.status === 401) return { msg: "FAILED token rejected by github", bad: true };
-  if (check.status !== 404) return { msg: "FAILED " + f.name + " check " + check.status };
-  const res = await fetch(api + path, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch })
+function put(url, body, onProgress) {
+  return new Promise((resolve) => {
+    const x = new XMLHttpRequest();
+    x.open("PUT", url);
+    x.setRequestHeader("Authorization", "Bearer " + cfg.token);
+    x.setRequestHeader("Accept", "application/vnd.github+json");
+    x.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total * 100);
+    x.onload = () => resolve(x.status);
+    x.onerror = () => resolve(0);
+    x.send(body);
   });
-  return res.ok
-    ? { msg: "UPLOADED " + f.name + " (live in about a minute)", ok: true }
-    : { msg: "FAILED " + f.name + " " + res.status, bad: res.status === 401 };
+}
+
+async function uploadOne(item) {
+  const f = item.file;
+  if (f.size > cfg.max_bytes) return setState(item, "Too big (max " + fmt(cfg.max_bytes) + ")", "bad", 0);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._ -]{0,99}$/.test(f.name) || f.name.includes("..")) return setState(item, "Invalid name (letters, numbers, . _ - space)", "bad", 0);
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/uploads/${encodeURIComponent(f.name)}`;
+  setState(item, "Checking...", "", 0);
+  const check = await fetch(url + "?ref=" + cfg.branch, { headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" }, cache: "no-store" });
+  if (check.status === 200) return setState(item, "Skipped, already exists", "warn", 100);
+  if (check.status === 401) return setState(item, "Rejected by GitHub (token invalid)", "bad", 0);
+  if (check.status !== 404) return setState(item, "Failed (check " + check.status + ")", "bad", 0);
+  setState(item, "Uploading...", "", 0);
+  const body = JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch: cfg.branch });
+  const status = await put(url, body, (p) => setState(item, "Uploading " + Math.round(p) + "%", "", p));
+  if (status === 201) setState(item, "Uploaded, link live in about a minute", "ok", 100);
+  else setState(item, status === 0 ? "Network error" : "Failed (" + status + ")", "bad", 0);
 }
 
 $("go").onclick = async () => {
-  const files = $("file").files;
-  if (!files.length) { log("pick a file first"); return; }
-  const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
-  for (const f of files) {
-    try { log((await uploadFile(f, headers)).msg); } catch (e) { log("ERROR " + f.name + " " + e.message); }
-  }
-  render();
+  $("go").disabled = true;
+  for (const item of queue) { try { await uploadOne(item); } catch (e) { setState(item, "Error " + e.message, "bad"); } }
+  queue = []; $("file").value = "";
+  await refresh();
+  $("go").disabled = true;
 };
-$("refresh").onclick = render;
-render();
+
+const drop = $("drop");
+$("file").onchange = (e) => addFiles(e.target.files);
+["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+$("q").oninput = renderList;
+$("refresh").onclick = refresh;
+
+loadConfig().then(refresh).catch((e) => { $("list").textContent = "ERROR " + e.message; });
 </script>
 </body>
 </html>

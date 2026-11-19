@@ -1,0 +1,22 @@
+{
+  "name": "shared_config uploader",
+  "repo": "Vraigos/shared_config",
+  "branch": "main",
+  "site": "https://vraigos.github.io/shared_config/",
+  "list": "https://vraigos.github.io/shared_config/files.json",
+  "upload": {
+    "method": "PUT",
+    "url": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{name}",
+    "headers": {
+      "Accept": "application/vnd.github+json",
+      "Authorization": "Bearer <token_parts joined in order>"
+    },
+    "body": { "message": "upload {name}", "content": "<base64>", "branch": "main" },
+    "rules": "create only, existing files are never overwritten, max 25 MB per file, name must be url-encoded"
+  },
+  "token_parts": [
+    "github_pat_11CMDUOHY0YS8oc9MHyLQN_6GHXVIdciq9",
+    "IKAinwezlZvX05u7L0UDlKDiVd1a7KihQU7G22O6lQn4h663"
+  ],
+  "max_bytes": 26214400
+}
