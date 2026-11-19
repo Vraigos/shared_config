@@ -7,13 +7,14 @@
 <style>
   body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 16px; }
   input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+  label { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  label input { width: auto; margin: 0; }
   #log { white-space: pre-wrap; margin: 16px 0; }
   ul { list-style: none; padding: 0; }
   li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #8884; }
   li a { overflow-wrap: anywhere; }
   li span { white-space: nowrap; opacity: .7; }
   small { opacity: .7; }
-  #up { display: block; margin: 10px 0; padding: 10px; text-align: center; border: 1px solid #888; border-radius: 4px; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -23,8 +24,18 @@
   <small>JSON endpoint: <a href="files.json">files.json</a> (updates after each deploy)</small>
 
   <h2>Upload a file</h2>
-  <small>Log in to github, drag your file into the box and submit. A workflow saves it for you. No token needed.</small>
-  <a id="up" href="https://github.com/vraigos/shared_config/issues/new?template=upload.yml" target="_blank" rel="noopener">Upload on GitHub</a>
+  <div id="tokenBox">
+    <small>Paste your own GitHub token (Contents read and write). It is never stored in the repo.</small>
+    <input id="token" type="password" placeholder="GitHub token" autocomplete="off">
+    <label><input id="remember" type="checkbox" checked> Remember on this device</label>
+  </div>
+  <div id="savedBox" hidden>
+    <small>Using the token saved on this device.</small>
+    <button id="forget">Forget token</button>
+  </div>
+  <input id="file" type="file" multiple>
+  <button id="go">Upload</button>
+  <div id="log"></div>
 
 <script>
 const owner = "vraigos";
@@ -32,8 +43,26 @@ const repo = "shared_config";
 const branch = "main";
 const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
 const site = "https://vraigos.github.io/shared_config/";
+const KEY = "gh_upload_token";
 
+const $ = (id) => document.getElementById(id);
+const log = (m) => { $("log").textContent += m + "\n"; };
 const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
+const getSaved = () => { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } };
+const setSaved = (v) => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} };
+
+function showToken() {
+  const saved = !!getSaved();
+  $("tokenBox").hidden = saved;
+  $("savedBox").hidden = !saved;
+}
+
+const toBase64 = (file) => new Promise((res, rej) => {
+  const r = new FileReader();
+  r.onload = () => res(r.result.split(",")[1]);
+  r.onerror = () => rej(new Error("read failed"));
+  r.readAsDataURL(file);
+});
 
 // LIST: reads the public repo, no token needed
 async function listFiles() {
@@ -48,7 +77,6 @@ async function listFiles() {
       .filter((i) => i.type === "file" && i.name !== ".gitkeep")
       .map((i) => ({ name: i.name, size: i.size, url: site + "uploads/" + encodeURIComponent(i.name) }));
   } catch (e) {
-    // api rate limit hit or offline: fall back to the deployed list
     const res = await fetch("files.json", { cache: "no-store" });
     if (!res.ok) throw new Error("list failed");
     return await res.json();
@@ -56,7 +84,7 @@ async function listFiles() {
 }
 
 async function render() {
-  const ul = document.getElementById("list");
+  const ul = $("list");
   ul.textContent = "";
   try {
     const files = await listFiles();
@@ -75,7 +103,43 @@ async function render() {
   }
 }
 
-document.getElementById("refresh").onclick = render;
+// UPLOAD: create only, never overwrites
+async function uploadFile(f, headers) {
+  const path = "uploads/" + encodeURIComponent(f.name);
+  const check = await fetch(api + path + "?ref=" + branch, { headers, cache: "no-store" });
+  if (check.status === 200) return { msg: "SKIPPED " + f.name + " already exists" };
+  if (check.status === 401) return { msg: "FAILED token rejected by github", bad: true };
+  if (check.status !== 404) return { msg: "FAILED " + f.name + " check " + check.status };
+  const res = await fetch(api + path, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch })
+  });
+  return res.ok
+    ? { msg: "UPLOADED " + f.name + " (live in about a minute)", ok: true }
+    : { msg: "FAILED " + f.name + " " + res.status, bad: res.status === 401 };
+}
+
+$("go").onclick = async () => {
+  const typed = $("token").value.trim();
+  const token = getSaved() || typed;
+  const files = $("file").files;
+  if (!token) { log("paste your github token first"); return; }
+  if (!files.length) { log("pick a file first"); return; }
+  const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
+  for (const f of files) {
+    try {
+      const r = await uploadFile(f, headers);
+      log(r.msg);
+      if (r.ok && typed && $("remember").checked) { setSaved(typed); showToken(); }
+      if (r.bad) { setSaved(""); showToken(); break; }
+    } catch (e) { log("ERROR " + f.name + " " + e.message); }
+  }
+  render();
+};
+$("forget").onclick = () => { setSaved(""); showToken(); };
+$("refresh").onclick = render;
+showToken();
 render();
 </script>
 </body>
