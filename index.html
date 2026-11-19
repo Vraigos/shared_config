@@ -12,16 +12,15 @@
 </head>
 <body>
   <h2>Upload a file</h2>
-  <input id="token" type="password" placeholder="GitHub token">
   <input id="file" type="file" multiple>
   <button id="go">Upload</button>
   <div id="log"></div>
 
 <script>
-const owner = location.hostname.split(".")[0];
-const repo = location.pathname.split("/")[1];
-const branch = "main";
-const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
+// paste your deployed worker url here
+const WORKER_URL = "https://gh-pages-uploader.YOUR_SUBDOMAIN.workers.dev";
+const MAX_BYTES = 20 * 1024 * 1024;
+
 const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
 
 const toBase64 = (file) => new Promise((res, rej) => {
@@ -32,29 +31,20 @@ const toBase64 = (file) => new Promise((res, rej) => {
 });
 
 document.getElementById("go").onclick = async () => {
-  const token = document.getElementById("token").value.trim();
   const files = document.getElementById("file").files;
-  if (!token || !files.length) { log("need token and file"); return; }
-  const headers = {
-    Authorization: "Bearer " + token,
-    Accept: "application/vnd.github+json"
-  };
+  if (!files.length) { log("pick a file first"); return; }
   for (const f of files) {
-    const path = "uploads/" + encodeURIComponent(f.name);
+    if (f.size > MAX_BYTES) { log("SKIPPED " + f.name + " over 20 MB"); continue; }
     try {
-      const check = await fetch(api + path + "?ref=" + branch, { headers });
-      if (check.status === 200) { log("SKIPPED " + f.name + " already exists"); continue; }
-      if (check.status !== 404) { log("FAILED " + f.name + " check " + check.status); continue; }
-      const res = await fetch(api + path, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          message: "upload " + f.name,
-          content: await toBase64(f),
-          branch
-        })
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: f.name, content: await toBase64(f) })
       });
-      log(res.ok ? "UPLOADED " + f.name : "FAILED " + f.name + " " + res.status);
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 201) log("UPLOADED " + f.name + " (live in about a minute at uploads/" + encodeURIComponent(f.name) + ")");
+      else if (res.status === 409) log("SKIPPED " + f.name + " already exists");
+      else log("FAILED " + f.name + " " + (data.message || res.status));
     } catch (e) {
       log("ERROR " + f.name + " " + e.message);
     }
