@@ -40,6 +40,9 @@ jobs:
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: build file list endpoint
+        run: |
+          find uploads -type f ! -name '.gitkeep' -printf '%f\t%s\n' | sort | jq -R -s 'split("\n") | map(select(length>0) | split("\t") | {name: .[0], size: (.[1]|tonumber), url: ("uploads/" + (.[0]|@uri))})' > files.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
