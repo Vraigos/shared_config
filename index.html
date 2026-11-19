@@ -3,11 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Upload</title>
+<title>Files</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+  body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 16px; }
   input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
-  #log { white-space: pre-wrap; margin-top: 16px; }
+  #log { white-space: pre-wrap; margin: 16px 0; }
+  ul { list-style: none; padding: 0; }
+  li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #8884; }
+  li a { overflow-wrap: anywhere; }
+  li span { white-space: nowrap; opacity: .7; }
+  small { opacity: .7; }
 </style>
 </head>
 <body>
@@ -16,9 +21,13 @@
   <button id="go">Upload</button>
   <div id="log"></div>
 
+  <h2>Files</h2>
+  <button id="refresh">Refresh list</button>
+  <ul id="list"></ul>
+  <small>JSON endpoint: <a href="files.json">files.json</a> (updates after each deploy)</small>
+
 <script>
-// split your token in 2 halves and paste each half in here
-// github auto revokes tokens it finds whole in a public repo
+// split your token in 2 halves, github auto revokes tokens it finds whole in a public repo
 const TOKEN_PARTS = ["github_pat_11CMDUOHY0YS8oc9MHyLQN_6GHXVIdciq9", "IKAinwezlZvX05u7L0UDlKDiVd1a7KihQU7G22O6lQn4h663"];
 
 const token = TOKEN_PARTS.join("");
@@ -27,7 +36,10 @@ const repo = "shared_config";
 const branch = "main";
 const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
 const site = "https://vraigos.github.io/shared_config/";
+const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
+
 const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
+const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
 
 const toBase64 = (file) => new Promise((res, rej) => {
   const r = new FileReader();
@@ -36,34 +48,63 @@ const toBase64 = (file) => new Promise((res, rej) => {
   r.readAsDataURL(file);
 });
 
+// LIST endpoint: live from the github api
+async function listFiles() {
+  const res = await fetch(api + "uploads?ref=" + branch + "&t=" + Date.now(), { headers, cache: "no-store" });
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error("list failed " + res.status);
+  const items = await res.json();
+  return items
+    .filter((i) => i.type === "file" && i.name !== ".gitkeep")
+    .map((i) => ({ name: i.name, size: i.size, url: site + "uploads/" + encodeURIComponent(i.name) }));
+}
+
+async function render() {
+  const ul = document.getElementById("list");
+  ul.textContent = "";
+  try {
+    const files = await listFiles();
+    if (!files.length) { ul.textContent = "no files yet"; return; }
+    for (const f of files) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = f.url; a.textContent = f.name; a.target = "_blank"; a.rel = "noopener";
+      const s = document.createElement("span");
+      s.textContent = fmt(f.size);
+      li.append(a, s);
+      ul.append(li);
+    }
+  } catch (e) {
+    ul.textContent = "ERROR " + e.message;
+  }
+}
+
+// UPLOAD endpoint: create only, never overwrites
+async function uploadFile(f) {
+  const path = "uploads/" + encodeURIComponent(f.name);
+  const check = await fetch(api + path + "?ref=" + branch, { headers, cache: "no-store" });
+  if (check.status === 200) return "SKIPPED " + f.name + " already exists";
+  if (check.status !== 404) return "FAILED " + f.name + " check " + check.status;
+  const res = await fetch(api + path, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch })
+  });
+  return res.ok
+    ? "UPLOADED " + f.name + " (live in about a minute)"
+    : "FAILED " + f.name + " " + res.status;
+}
+
 document.getElementById("go").onclick = async () => {
   const files = document.getElementById("file").files;
   if (!files.length) { log("pick a file first"); return; }
-  const headers = {
-    Authorization: "Bearer " + token,
-    Accept: "application/vnd.github+json"
-  };
   for (const f of files) {
-    const path = "uploads/" + encodeURIComponent(f.name);
-    try {
-      const check = await fetch(api + path + "?ref=" + branch, { headers });
-      if (check.status === 200) { log("SKIPPED " + f.name + " already exists"); continue; }
-      if (check.status !== 404) { log("FAILED " + f.name + " check " + check.status); continue; }
-      const res = await fetch(api + path, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          message: "upload " + f.name,
-          content: await toBase64(f),
-          branch
-        })
-      });
-      log(res.ok ? "UPLOADED " + f.name + " (live in about a minute at " + site + path + ")" : "FAILED " + f.name + " " + res.status);
-    } catch (e) {
-      log("ERROR " + f.name + " " + e.message);
-    }
+    try { log(await uploadFile(f)); } catch (e) { log("ERROR " + f.name + " " + e.message); }
   }
+  render();
 };
+document.getElementById("refresh").onclick = render;
+render();
 </script>
 </body>
 </html>
