@@ -1,0 +1,40 @@
+name: upload
+# POST https://api.github.com/repos/vraigos/shared_config/dispatches
+# body: {"event_type":"upload","client_payload":{"name":"file.txt","content":"<base64>"}}
+on:
+  repository_dispatch:
+    types: [upload]
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: upload
+  cancel-in-progress: false
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: save file (create only, never overwrite)
+        env:
+          NAME: ${{ github.event.client_payload.name }}
+          CONTENT: ${{ github.event.client_payload.content }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          re='^[A-Za-z0-9][A-Za-z0-9._ -]{0,99}$'
+          if ! [[ "$NAME" =~ $re ]] || [[ "$NAME" == *..* ]]; then echo "bad file name"; exit 1; fi
+          if [ -z "$CONTENT" ]; then echo "no content"; exit 1; fi
+          mkdir -p uploads
+          if [ -e "uploads/$NAME" ]; then echo "file already exists"; exit 1; fi
+          printf '%s' "$CONTENT" | base64 -d > "$RUNNER_TEMP/up.bin"
+          cp -n "$RUNNER_TEMP/up.bin" "uploads/$NAME"
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -- "uploads/$NAME"
+          git commit -m "upload $NAME"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          gh workflow run pages.yml --ref main
