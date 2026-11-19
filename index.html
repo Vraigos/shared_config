@@ -13,6 +13,7 @@
   li a { overflow-wrap: anywhere; }
   li span { white-space: nowrap; opacity: .7; }
   small { opacity: .7; }
+  #up { display: block; margin: 10px 0; padding: 10px; text-align: center; border: 1px solid #888; border-radius: 4px; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -22,11 +23,8 @@
   <small>JSON endpoint: <a href="files.json">files.json</a> (updates after each deploy)</small>
 
   <h2>Upload a file</h2>
-  <small>Only the repo owner can upload. Paste your own GitHub token below. It is only kept in this tab and is never saved or stored in the repo.</small>
-  <input id="token" type="password" placeholder="GitHub token (Contents read and write)" autocomplete="off">
-  <input id="file" type="file" multiple>
-  <button id="go">Upload</button>
-  <div id="log"></div>
+  <small>Log in to github, drag your file into the box and submit. A workflow saves it for you. No token needed.</small>
+  <a id="up" href="https://github.com/vraigos/shared_config/issues/new?template=upload.yml" target="_blank" rel="noopener">Upload on GitHub</a>
 
 <script>
 const owner = "vraigos";
@@ -35,15 +33,7 @@ const branch = "main";
 const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
 const site = "https://vraigos.github.io/shared_config/";
 
-const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
 const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
-
-const toBase64 = (file) => new Promise((res, rej) => {
-  const r = new FileReader();
-  r.onload = () => res(r.result.split(",")[1]);
-  r.onerror = () => rej(new Error("read failed"));
-  r.readAsDataURL(file);
-});
 
 // LIST: reads the public repo, no token needed
 async function listFiles() {
@@ -85,34 +75,6 @@ async function render() {
   }
 }
 
-// UPLOAD: create only, never overwrites, needs the owner token typed in above
-async function uploadFile(f, headers) {
-  const path = "uploads/" + encodeURIComponent(f.name);
-  const check = await fetch(api + path + "?ref=" + branch, { headers, cache: "no-store" });
-  if (check.status === 200) return "SKIPPED " + f.name + " already exists";
-  if (check.status === 401) return "FAILED token rejected by github";
-  if (check.status !== 404) return "FAILED " + f.name + " check " + check.status;
-  const res = await fetch(api + path, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch })
-  });
-  return res.ok
-    ? "UPLOADED " + f.name + " (live in about a minute)"
-    : "FAILED " + f.name + " " + res.status;
-}
-
-document.getElementById("go").onclick = async () => {
-  const token = document.getElementById("token").value.trim();
-  const files = document.getElementById("file").files;
-  if (!token) { log("uploading needs your github token"); return; }
-  if (!files.length) { log("pick a file first"); return; }
-  const headers = { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" };
-  for (const f of files) {
-    try { log(await uploadFile(f, headers)); } catch (e) { log("ERROR " + f.name + " " + e.message); }
-  }
-  render();
-};
 document.getElementById("refresh").onclick = render;
 render();
 </script>
