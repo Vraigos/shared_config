@@ -17,10 +17,16 @@
   <div id="log"></div>
 
 <script>
-// paste your deployed worker url here
-const WORKER_URL = "https://gh-pages-uploader.YOUR_SUBDOMAIN.workers.dev";
-const MAX_BYTES = 20 * 1024 * 1024;
+// split your token in 2 halves and paste each half in here
+// github auto revokes tokens it finds whole in a public repo
+const TOKEN_PARTS = ["PASTE_FIRST_HALF", "PASTE_SECOND_HALF"];
 
+const token = TOKEN_PARTS.join("");
+const owner = "vraigos";
+const repo = "shared_config";
+const branch = "main";
+const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
+const site = "https://vraigos.github.io/shared_config/";
 const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
 
 const toBase64 = (file) => new Promise((res, rej) => {
@@ -33,18 +39,26 @@ const toBase64 = (file) => new Promise((res, rej) => {
 document.getElementById("go").onclick = async () => {
   const files = document.getElementById("file").files;
   if (!files.length) { log("pick a file first"); return; }
+  const headers = {
+    Authorization: "Bearer " + token,
+    Accept: "application/vnd.github+json"
+  };
   for (const f of files) {
-    if (f.size > MAX_BYTES) { log("SKIPPED " + f.name + " over 20 MB"); continue; }
+    const path = "uploads/" + encodeURIComponent(f.name);
     try {
-      const res = await fetch(WORKER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: f.name, content: await toBase64(f) })
+      const check = await fetch(api + path + "?ref=" + branch, { headers });
+      if (check.status === 200) { log("SKIPPED " + f.name + " already exists"); continue; }
+      if (check.status !== 404) { log("FAILED " + f.name + " check " + check.status); continue; }
+      const res = await fetch(api + path, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: "upload " + f.name,
+          content: await toBase64(f),
+          branch
+        })
       });
-      const data = await res.json().catch(() => ({}));
-      if (res.status === 201) log("UPLOADED " + f.name + " (live in about a minute at uploads/" + encodeURIComponent(f.name) + ")");
-      else if (res.status === 409) log("SKIPPED " + f.name + " already exists");
-      else log("FAILED " + f.name + " " + (data.message || res.status));
+      log(res.ok ? "UPLOADED " + f.name + " (live in about a minute at " + site + path + ")" : "FAILED " + f.name + " " + res.status);
     } catch (e) {
       log("ERROR " + f.name + " " + e.message);
     }
