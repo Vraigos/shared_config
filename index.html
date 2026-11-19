@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
+  input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+  #log { white-space: pre-wrap; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <h2>Upload a file</h2>
+  <input id="token" type="password" placeholder="GitHub token">
+  <input id="file" type="file" multiple>
+  <button id="go">Upload</button>
+  <div id="log"></div>
+
+<script>
+const owner = location.hostname.split(".")[0];
+const repo = location.pathname.split("/")[1];
+const branch = "main";
+const api = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/";
+const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
+
+const toBase64 = (file) => new Promise((res, rej) => {
+  const r = new FileReader();
+  r.onload = () => res(r.result.split(",")[1]);
+  r.onerror = () => rej(new Error("read failed"));
+  r.readAsDataURL(file);
+});
+
+document.getElementById("go").onclick = async () => {
+  const token = document.getElementById("token").value.trim();
+  const files = document.getElementById("file").files;
+  if (!token || !files.length) { log("need token and file"); return; }
+  const headers = {
+    Authorization: "Bearer " + token,
+    Accept: "application/vnd.github+json"
+  };
+  for (const f of files) {
+    const path = "uploads/" + encodeURIComponent(f.name);
+    try {
+      const check = await fetch(api + path + "?ref=" + branch, { headers });
+      if (check.status === 200) { log("SKIPPED " + f.name + " already exists"); continue; }
+      if (check.status !== 404) { log("FAILED " + f.name + " check " + check.status); continue; }
+      const res = await fetch(api + path, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: "upload " + f.name,
+          content: await toBase64(f),
+          branch
+        })
+      });
+      log(res.ok ? "UPLOADED " + f.name : "FAILED " + f.name + " " + res.status);
+    } catch (e) {
+      log("ERROR " + f.name + " " + e.message);
+    }
+  }
+};
+</script>
+</body>
+</html>

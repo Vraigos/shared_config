@@ -1,0 +1,48 @@
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: block edits and deletes in uploads
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then exit 0; fi
+          BAD=$(git diff --name-only --no-renames --diff-filter=MDT "$BEFORE" HEAD -- uploads/)
+          if [ -n "$BAD" ]; then
+            echo "$BAD" | while IFS= read -r f; do git checkout "$BEFORE" -- "$f"; done
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git commit -m "restore protected uploads"
+            git push
+            echo "blocked changes to existing uploads"
+            exit 1
+          fi
+  deploy:
+    needs: guard
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: d
+        uses: actions/deploy-pages@v4
