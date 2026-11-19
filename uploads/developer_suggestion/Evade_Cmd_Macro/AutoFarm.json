@@ -1,1 +1,1 @@
-{Placeholder}
+{"AutoFarm":[{"keybind":"F","delayValue":3,"delayUnit":"Second","startRoundType":"Intermission","name":"Macro","command":"!time 1","startTimeType":"Any Time","stopMode":"indefinitely"},{"keybind":"F","delayValue":1,"delayUnit":"Ms","startRoundType":"Intermission","name":"Macro","command":"!specialround Plushie Hell","startTimeType":"Any Time","stopMode":"indefinitely"}]}
