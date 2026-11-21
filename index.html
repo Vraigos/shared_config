@@ -226,11 +226,14 @@ $("refresh").onclick = refresh;
 
 function showLua() {
   $("lua").textContent = `local HttpService = game:GetService("HttpService")
-local base = "${cfg.site}"
-local list = HttpService:JSONDecode(game:HttpGet(base .. "files.json"))
--- list[i] = { name, path, size, url, pinned }  (pinned = developer suggestion, always first)
-for _, f in ipairs(list) do print(f.pinned and "[DEV]" or "", f.path) end
-local data = HttpService:JSONDecode(game:HttpGet(base .. list[1].url))`;
+local api = "https://api.github.com/repos/${cfg.repo}"
+-- list everything (developer_suggestion/ entries are pinned first by the UI)
+local tree = HttpService:JSONDecode(game:HttpGet(api .. "/git/trees/${cfg.branch}?recursive=1"))
+for _, e in ipairs(tree.tree) do
+  if e.type == "blob" and e.path:sub(1, 8) == "uploads/" and e.path:sub(-5) == ".json" then print(e.path, e.sha) end
+end
+-- read one file: JSON with base64 "content"
+local file = HttpService:JSONDecode(game:HttpGet(api .. "/contents/uploads/<path>?ref=${cfg.branch}"))`;
 }
 
 loadConfig().then(showLua).then(refresh).catch((e) => { $("list").textContent = "ERROR " + e.message; });

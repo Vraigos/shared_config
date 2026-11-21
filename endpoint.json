@@ -3,7 +3,7 @@
   "repo": "Vraigos/shared_config",
   "branch": "main",
   "site": "https://vraigos.github.io/shared_config/",
-  "list": "https://vraigos.github.io/shared_config/files.json",
+  "list": "https://api.github.com/repos/Vraigos/shared_config/git/trees/main?recursive=1",
   "upload": {
     "method": "PUT",
     "url": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{name}",
@@ -24,5 +24,7 @@
   ],
   "max_bytes": 26214400,
   "pinned_folder": "uploads/developer_suggestion",
-  "order": "files.json lists pinned (developer_suggestion) entries first, then the rest A-Z"
+  "order": "files.json lists pinned (developer_suggestion) entries first, then the rest A-Z",
+  "read": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{path}?ref=main",
+  "read_note": "GitHub API contents endpoint: JSON with base64 'content'. Entries under developer_suggestion/ are pinned first."
 }
