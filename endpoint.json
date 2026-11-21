@@ -26,5 +26,10 @@
   "pinned_folder": "uploads/developer_suggestion",
   "order": "files.json lists pinned (developer_suggestion) entries first, then the rest A-Z",
   "read": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{path}?ref=main",
-  "read_note": "GitHub API contents endpoint: JSON with base64 'content'. Entries under developer_suggestion/ are pinned first."
+  "read_note": "GitHub API contents endpoint: JSON with base64 'content'. Entries under developer_suggestion/ are pinned first.",
+  "uploads_dir": "uploads",
+  "extensions": [
+    ".json"
+  ],
+  "config_note": "The Roblox script reads everything from this file: repo, branch, uploads_dir, pinned_folder, extensions, max_bytes, list, read, upload and token_parts."
 }
