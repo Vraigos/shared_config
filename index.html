@@ -3,240 +3,661 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shared Files</title>
+<title>Evade CMD presets</title>
+<meta name="description" content="Macro presets for the Evade CMD macro GUI, shared by the developer and the community.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#16181d; --muted:#6b7280; --line:#e5e7eb; --accent:#4f46e5; --accent-fg:#fff; --ok:#16a34a; --bad:#dc2626; --warn:#d97706; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --text:#e8eaee; --muted:#9aa1ad; --line:#272b33; --accent:#818cf8; --accent-fg:#0f1115; } }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  main { max-width:680px; margin:0 auto; padding:32px 16px 64px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  .sub { color:var(--muted); margin:0 0 24px; font-size:14px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:20px; }
-  .card h2 { font-size:15px; margin:0 0 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-  .drop { border:2px dashed var(--line); border-radius:12px; padding:28px 16px; text-align:center; cursor:pointer; transition:.15s; color:var(--muted); }
-  .drop:hover, .drop.over { border-color:var(--accent); color:var(--text); background:color-mix(in srgb,var(--accent) 8%,transparent); }
-  .drop b { color:var(--accent); }
-  .drop input { display:none; }
-  button { font:inherit; cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--text); border-radius:8px; padding:6px 12px; }
-  button:hover { border-color:var(--accent); }
-  button.primary { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); width:100%; padding:10px; margin-top:12px; font-weight:600; }
-  button:disabled { opacity:.5; cursor:default; }
-  .queue { list-style:none; margin:12px 0 0; padding:0; }
-  .queue li { padding:8px 0; border-bottom:1px solid var(--line); }
-  .row { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
-  .name { overflow-wrap:anywhere; }
-  .meta { color:var(--muted); font-size:13px; white-space:nowrap; }
-  .bar { height:5px; background:var(--line); border-radius:3px; margin-top:6px; overflow:hidden; }
-  .bar i { display:block; height:100%; width:0; background:var(--accent); transition:width .1s; }
-  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
-  input[type=search] { width:100%; font:inherit; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:var(--text); margin-bottom:8px; }
-  .files { list-style:none; margin:0; padding:0; }
-  .files li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
-  .files li:last-child { border-bottom:0; }
-  .files a { color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
-  .files a:hover { color:var(--accent); text-decoration:underline; }
-  .files .dir { color:var(--muted); font-size:12px; display:block; }
-  .actions { display:flex; align-items:center; gap:10px; }
-  .empty { color:var(--muted); text-align:center; padding:16px 0; }
-  .pin { background:color-mix(in srgb,var(--accent) 14%,transparent); border-radius:8px; padding:10px 8px !important; margin:2px 0; }
-  .badge { font-size:11px; font-weight:600; color:var(--accent-fg); background:var(--accent); border-radius:99px; padding:1px 8px; margin-right:6px; vertical-align:middle; }
-  .hdr { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.05em; padding:10px 0 2px; list-style:none; }
-  pre.code { background:color-mix(in srgb,var(--text) 6%,transparent); border:1px solid var(--line); border-radius:8px; padding:10px; overflow-x:auto; font-size:12.5px; margin:8px 0 0; }
-  .endpoint { font-size:13px; color:var(--muted); }
-  .endpoint a { color:var(--accent); }
+:root {
+  color-scheme: light dark;
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --sunken: #e3e8ed;
+  --ink: #18212b;
+  --muted: #566272;
+  --line: #cbd3db;
+  --cue: #2e5bff;
+  --cue-ink: #ffffff;
+  --cue-soft: #e4eaff;
+  --dev: #ffc233;
+  --ok: #17794f;
+  --bad: #c7302b;
+  --focus: #2e5bff;
+  --radius: 10px;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --text: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151b24;
+    --surface: #1d2631;
+    --sunken: #131922;
+    --ink: #e7ecf2;
+    --muted: #9aa7b6;
+    --line: #2d3947;
+    --cue: #7da2ff;
+    --cue-ink: #0d1626;
+    --cue-soft: #243350;
+    --dev: #ffc94a;
+    --ok: #4ccb8f;
+    --bad: #ff8a83;
+    --focus: #7da2ff;
+  }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shell { max-width: 1180px; margin: 0 auto; padding: 40px 24px 96px; }
+
+/* header */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 36px; }
+.top h1 { font: 700 clamp(2rem, 4.6vw, 3.1rem)/1.02 var(--display); letter-spacing: -0.025em; margin: 0 0 10px; }
+.lede { margin: 0; max-width: 56ch; color: var(--muted); font-size: 1.0625rem; }
+.status { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .9375rem; }
+
+/* layout */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; align-items: start; }
+.share { position: sticky; top: 24px; }
+@media (max-width: 960px) {
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+  .shell { padding: 28px 16px 72px; }
+  .share { position: static; }
+}
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); cursor: pointer; font-weight: 600; font-size: .9375rem;
+  transition: background-color .15s, border-color .15s, transform .08s;
+}
+.btn:hover { border-color: var(--muted); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; transform: none; }
+.btn.primary { background: var(--cue); border-color: var(--cue); color: var(--cue-ink); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--muted); }
+.btn.quiet:hover { background: var(--sunken); color: var(--ink); }
+.btn.icon { width: 40px; padding: 0; }
+.btn.done { color: var(--ok); }
+svg.i { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* toolbar */
+.toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+.search { position: relative; flex: 1 1 240px; }
+.search svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; color: var(--muted); pointer-events: none; }
+.search input {
+  width: 100%; height: 44px; padding: 0 44px 0 40px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--surface);
+}
+.search input::placeholder { color: var(--muted); }
+.search kbd {
+  position: absolute; right: 10px; top: 50%; translate: 0 -50%; font: 500 .75rem var(--mono);
+  color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; background: var(--sunken);
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; border-radius: 6px; min-height: 36px; padding: 0 12px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: .9rem; }
+.seg button[aria-pressed="true"] { background: var(--cue-soft); color: var(--ink); }
+.seg span { font-weight: 500; margin-left: 6px; color: var(--muted); }
+
+/* list */
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.group { margin: 18px 0 0; font: 600 1.0625rem var(--display); letter-spacing: -0.01em; }
+.group:first-child { margin-top: 0; }
+.item { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.item.dev { border-left: 6px solid var(--dev); }
+.item.fresh { animation: flash 1.6s ease-out 1; }
+@keyframes flash { 0% { box-shadow: 0 0 0 3px var(--cue); } 100% { box-shadow: 0 0 0 3px transparent; } }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.head {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; text-align: left; width: 100%;
+  background: none; border: 0; padding: 16px 8px 16px 16px; cursor: pointer; border-radius: var(--radius);
+}
+.chev { margin-top: 3px; transition: rotate .2s; color: var(--muted); }
+.item.open .chev { rotate: 90deg; }
+.title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font: 600 1.1875rem/1.25 var(--display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.badge { font: 600 .75rem/1 var(--text); background: var(--dev); color: #3d2a00; padding: 4px 8px; border-radius: 999px; }
+.desc { display: block; margin-top: 6px; color: var(--ink); max-width: 64ch; overflow-wrap: anywhere; }
+.meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--muted); font-size: .875rem; }
+.meta:empty { display: none; }
+.meta .path { font-family: var(--mono); font-size: .8125rem; overflow-wrap: anywhere; }
+.acts { display: flex; gap: 2px; padding: 12px 12px 0 0; }
+@media (max-width: 640px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .acts { padding: 0 12px 12px 50px; flex-wrap: wrap; }
+}
+
+/* cue sheet */
+.sheet { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+.item.open .sheet { grid-template-rows: 1fr; }
+.sheet > div { overflow: hidden; min-height: 0; }
+.cues { list-style: none; margin: 0 16px 16px; padding: 6px 0; background: var(--sunken); border-radius: 8px; }
+.cues + .cues { margin-top: -4px; }
+.cues li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding: 10px 16px; align-items: baseline; }
+.cues li + li { border-top: 1px solid var(--line); }
+.cmd { font: 500 .9375rem/1.4 var(--mono); overflow-wrap: anywhere; }
+.when { grid-column: 1; color: var(--muted); font-size: .875rem; display: flex; flex-wrap: wrap; gap: 0 16px; }
+.key { grid-row: 1 / span 2; grid-column: 2; align-self: center; font: 500 .8125rem var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; background: var(--surface); border-radius: 6px; padding: 2px 8px; }
+.sheet-note { margin: 0 16px 16px; padding: 12px 16px; background: var(--sunken); border-radius: 8px; color: var(--muted); display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+.sheet-note.bad { color: var(--bad); }
+
+/* states */
+.skel { height: 84px; border-radius: var(--radius); background: linear-gradient(90deg, var(--sunken) 25%, var(--surface) 50%, var(--sunken) 75%); background-size: 300% 100%; animation: sh 1.4s linear infinite; border: 1px solid var(--line); }
+@keyframes sh { to { background-position: -300% 0; } }
+.state { border: 1px dashed var(--line); border-radius: var(--radius); padding: 28px 24px; color: var(--muted); display: grid; gap: 12px; justify-items: start; }
+.state strong { color: var(--ink); font: 600 1.125rem var(--display); }
+.state p { margin: 0; max-width: 52ch; }
+
+/* share composer */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.panel h2 { font: 700 1.375rem/1.15 var(--display); letter-spacing: -0.015em; margin: 0 0 6px; }
+.panel .sub { margin: 0 0 18px; color: var(--muted); font-size: .9375rem; }
+.field { display: grid; gap: 6px; margin-bottom: 16px; }
+.field label { font-weight: 600; font-size: .9375rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.hint { color: var(--muted); font-weight: 400; font-size: .8125rem; }
+.count { font-weight: 400; color: var(--muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+textarea, .field input {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 10px 12px; resize: vertical;
+}
+textarea { min-height: 120px; font: 400 .8125rem/1.5 var(--mono); }
+textarea.plain { min-height: 72px; font: 400 .9375rem/1.45 var(--text); }
+textarea.drag { border-color: var(--cue); background: var(--cue-soft); }
+.field input { height: 42px; }
+.field input.mono { font-family: var(--mono); font-size: .875rem; }
+.verdict { min-height: 22px; font-size: .875rem; display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.verdict.ok { color: var(--ok); }
+.verdict.bad { color: var(--bad); }
+.target { margin: -6px 0 16px; color: var(--muted); font-size: .8125rem; font-family: var(--mono); overflow-wrap: anywhere; }
+.row2 { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.guide { margin-top: 20px; padding: 18px 22px; border-radius: var(--radius); background: var(--sunken); color: var(--muted); font-size: .9375rem; }
+.guide h3 { margin: 0 0 6px; font: 600 1rem var(--display); color: var(--ink); }
+.guide p { margin: 0; }
+
+/* toast */
+.toasts { position: fixed; left: 50%; bottom: 24px; translate: -50% 0; display: grid; gap: 8px; z-index: 10; width: min(92vw, 460px); }
+.toast { background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 28px rgb(0 0 0 / .25); animation: pop .2s ease-out; }
+.toast.bad { background: var(--bad); color: #fff; }
+@keyframes pop { from { opacity: 0; translate: 0 8px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
 </style>
 </head>
 <body>
-<main>
-  <h1>Shared Files</h1>
-  <p class="sub">Upload a file and get a public link. No account or token needed. Existing files are never overwritten.</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V9"/><path d="M7 13l5-5 5 5"/><path d="M5 4h14"/></symbol>
+</svg>
 
-  <section class="card">
-    <h2>Upload</h2>
-    <label class="drop" id="drop">
-      <input id="file" type="file" multiple>
-      <div><b>Choose files</b> or drag them here</div>
-      <div class="meta" id="limit"></div>
-    </label>
-    <ul class="queue" id="queue"></ul>
-    <button class="primary" id="go" disabled>Upload</button>
-  </section>
+<div class="shell">
+  <header class="top">
+    <div>
+      <h1>Evade CMD presets</h1>
+      <p class="lede">Macro presets from the developer and the community. Open one in the macro GUI, or copy it and paste it into Import.</p>
+    </div>
+    <div class="status" aria-live="polite">
+      <span id="status">Loading presets</span>
+      <button class="btn quiet icon" id="refresh" type="button" aria-label="Refresh the list" title="Refresh"><svg class="i"><use href="#i-refresh"/></svg></button>
+    </div>
+  </header>
 
-  <section class="card">
-    <h2><span>Files <span class="meta" id="count"></span></span><button id="refresh">Refresh</button></h2>
-    <input type="search" id="q" placeholder="Search files">
-    <ul class="files" id="list"></ul>
-  </section>
+  <div class="grid">
+    <main id="browse">
+      <h2 class="sr">Presets</h2>
+      <div class="toolbar">
+        <div class="search">
+          <svg class="i"><use href="#i-search"/></svg>
+          <label class="sr" for="q">Search presets</label>
+          <input id="q" type="search" placeholder="Search by name, description or command" autocomplete="off">
+          <kbd aria-hidden="true">/</kbd>
+        </div>
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" data-f="all" aria-pressed="true">All<span id="n-all"></span></button>
+          <button type="button" data-f="dev" aria-pressed="false">Developer<span id="n-dev"></span></button>
+          <button type="button" data-f="community" aria-pressed="false">Community<span id="n-community"></span></button>
+        </div>
+      </div>
+      <ul class="list" id="list" aria-busy="true">
+        <li class="skel"></li><li class="skel"></li><li class="skel"></li>
+      </ul>
+    </main>
 
-  <section class="card">
-    <h2>Use in Roblox</h2>
-    <div class="meta" style="white-space:normal">files.json lists everything, developer suggestions first. Fetch a config by its link.</div>
-    <pre class="code" id="lua"></pre>
-  </section>
+    <aside class="share" id="share" aria-labelledby="share-h">
+      <section class="panel">
+        <h2 id="share-h">Share a preset</h2>
+        <p class="sub">In the macro GUI, open a saved preset, choose Export, then Copy. Paste it here.</p>
 
-  <p class="endpoint">API: <a href="endpoint.json">endpoint.json</a> (upload) · <a href="files.json">files.json</a> (list)</p>
-</main>
+        <div class="field">
+          <label for="json"><span>Preset</span><button type="button" class="btn quiet" id="pick" style="min-height:30px;padding:0 8px"><svg class="i"><use href="#i-up"/></svg>Choose a file</button></label>
+          <textarea id="json" spellcheck="false" placeholder='{"My preset":[ ... ]}' aria-describedby="verdict"></textarea>
+          <input type="file" id="file" accept=".json,application/json" hidden>
+          <div class="verdict" id="verdict" role="status"></div>
+        </div>
+
+        <div class="field">
+          <label for="desc"><span>Description <span class="hint">(optional)</span></span><span class="count" id="count">0/200</span></label>
+          <textarea id="desc" class="plain" rows="3" placeholder="What does it do, and when should someone use it?"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="folder"><span>Folder</span></label>
+          <input id="folder" class="mono" list="folders" autocomplete="off" spellcheck="false">
+          <datalist id="folders"></datalist>
+        </div>
+        <p class="target" id="target"></p>
+
+        <div class="row2">
+          <button class="btn primary" id="go" type="button" disabled><svg class="i"><use href="#i-up"/></svg><span>Upload preset</span></button>
+          <span class="hint" id="limit"></span>
+        </div>
+      </section>
+
+      <section class="guide">
+        <h3>Using a preset in Roblox</h3>
+        <p>In the macro GUI, open Preset mode and choose Community. The open button loads the macros straight into the editor. The download button saves a copy to your presets.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
-const $ = (id) => document.getElementById(id);
-const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
-const PIN = "developer_suggestion/";
-const isPinned = (p) => p.startsWith(PIN);
+"use strict";
+const $ = (s) => document.querySelector(s);
+const svg = (name) => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("class", "i"); const u = document.createElementNS("http://www.w3.org/2000/svg", "use"); u.setAttribute("href", "#i-" + name); s.append(u); return s; };
+const h = (tag, attrs, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+};
+const fmtBytes = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
 const encPath = (p) => p.split("/").map(encodeURIComponent).join("/");
+const META = "_meta";
 
-let cfg = null, all = [], queue = [];
+let cfg = null;
+const state = { items: [], filter: "all", q: "", open: new Set(), cache: new Map(), local: new Map(), fresh: null, error: "", partial: "" };
+const sidMap = new Map();
+const sid = (id) => { if (!sidMap.has(id)) sidMap.set(id, "sheet-" + sidMap.size); return sidMap.get(id); };
+
+/* ---------- config and network ---------- */
+const devFolder = () => ((cfg.developer && cfg.developer.folder) || "developer_suggestion/").replace(/\/?$/, "/");
+const uploadsDir = () => cfg.uploads_dir || "uploads";
+const maxDesc = () => cfg.max_description || 200;
+const exts = () => (cfg.extensions && cfg.extensions.length ? cfg.extensions : [".json"]).map((e) => e.toLowerCase());
+const rawBase = () => "https://raw.githubusercontent.com/" + cfg.repo + "/" + cfg.branch;
+const rawUrl = (rel) => ((cfg.developer && cfg.developer.raw) || (rawBase() + "/" + uploadsDir() + "/{path}")).replace("{path}", encPath(rel));
+const apiBase = () => "https://api.github.com/repos/" + cfg.repo;
 
 async function loadConfig() {
   const res = await fetch("endpoint.json", { cache: "no-store" });
   if (!res.ok) throw new Error("endpoint.json " + res.status);
   cfg = await res.json();
-  cfg.token = cfg.token_parts.join("");
-  $("limit").textContent = "Max " + fmt(cfg.max_bytes) + " per file";
+  cfg.token = (cfg.token_parts || []).join("");
 }
 
-async function listFiles() {
-  const [o, r] = cfg.repo.split("/");
-  try {
-    const res = await fetch(`https://api.github.com/repos/${cfg.repo}/git/trees/${cfg.branch}?recursive=1&t=${Date.now()}`,
-      { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
-    if (!res.ok) throw new Error("api " + res.status);
-    const t = await res.json();
-    return t.tree.filter((i) => i.type === "blob" && i.path.startsWith("uploads/") && !i.path.endsWith(".gitkeep"))
-      .map((i) => ({ path: i.path.slice(8), size: i.size, url: cfg.site + encPath(i.path) }));
-  } catch (e) {
-    const res = await fetch("files.json", { cache: "no-store" });
-    if (!res.ok) throw new Error("list failed");
-    return (await res.json()).map((f) => ({ path: f.path || f.name, size: f.size, url: cfg.site + f.url }));
+// reads use the public token for a higher rate limit and fall back to anonymous if GitHub rejects it
+async function api(url) {
+  const base = { Accept: "application/vnd.github+json" };
+  let res = await fetch(url, { headers: cfg.token ? { ...base, Authorization: "Bearer " + cfg.token } : base, cache: "no-store" });
+  if (res.status === 401) res = await fetch(url, { headers: base, cache: "no-store" });
+  return res;
+}
+const b64ToText = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, "")), (c) => c.charCodeAt(0)));
+const textToB64 = (t) => { const bytes = new TextEncoder().encode(t); let s = ""; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(s); };
+
+function cleanDesc(s) {
+  if (typeof s !== "string") return "";
+  s = s.replace(/[\u0000-\u001f]+/g, " ").trim();
+  return Array.from(s).slice(0, maxDesc()).join("");
+}
+const stripExt = (n) => n.replace(/\.[^.]+$/, "");
+const hasExt = (p) => exts().some((e) => p.toLowerCase().endsWith(e));
+
+async function loadItems() {
+  const dev = (async () => {
+    const url = (cfg.developer && cfg.developer.manifest_raw) || (rawBase() + "/" + ((cfg.developer && cfg.developer.manifest) || "developer_suggestions.json"));
+    const res = await fetch(url + "?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("manifest " + res.status);
+    const m = await res.json();
+    return (m.items || []).filter((i) => i && typeof i.path === "string" && !i.path.includes("..") && hasExt(i.path)).map((i) => {
+      const base = i.path.split("/").pop();
+      return { id: i.path, kind: "dev", path: i.path, title: i.name || stripExt(base), file: base, description: cleanDesc(i.description), size: null };
+    });
+  })();
+  const community = (async () => {
+    const res = await api(apiBase() + "/git/trees/" + cfg.branch + "?recursive=1&t=" + Date.now());
+    if (!res.ok) throw new Error("tree " + res.status);
+    const tree = await res.json();
+    let descs = {};
+    try {
+      const d = await api(apiBase() + "/contents/" + (cfg.descriptions_path || "descriptions.json") + "?ref=" + cfg.branch + "&t=" + Date.now());
+      if (d.ok) descs = JSON.parse(b64ToText((await d.json()).content)) || {};
+    } catch (e) { descs = {}; }
+    const prefix = uploadsDir() + "/";
+    const sizes = new Map(tree.tree.map((t) => [t.path, t.size]));
+    return tree.tree.filter((e) => e.type === "blob" && e.path.startsWith(prefix) && hasExt(e.path)).map((e) => e.path.slice(prefix.length))
+      .filter((rel) => !rel.startsWith(devFolder())).map((rel) => {
+        const base = rel.split("/").pop();
+        return { id: rel, kind: "community", path: rel, title: stripExt(base), file: base, description: cleanDesc(descs[rel]) || state.local.get(rel) || "", size: sizes.get(prefix + rel) };
+      });
+  })();
+  const [d, c] = await Promise.allSettled([dev, community]);
+  if (d.status === "rejected" && c.status === "rejected") throw c.reason;
+  const items = [...(d.value || []), ...(c.value || []).sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }))];
+  return { items, partial: d.status === "rejected" ? "Developer suggestions are unavailable right now." : c.status === "rejected" ? "Community presets are unavailable right now." : "" };
+}
+
+async function loadPreset(item) {
+  if (state.cache.has(item.id)) return state.cache.get(item.id);
+  let text = null;
+  try { const r = await fetch(rawUrl(item.path) + "?t=" + Date.now(), { cache: "no-store" }); if (r.ok) text = await r.text(); } catch (e) { /* try the API next */ }
+  if (text == null && item.kind === "community") {
+    const r = await api(apiBase() + "/contents/" + uploadsDir() + "/" + encPath(item.path) + "?ref=" + cfg.branch);
+    if (r.ok) text = b64ToText((await r.json()).content);
+  }
+  if (text == null) throw new Error("not found");
+  const data = JSON.parse(text);
+  const presets = Object.entries(data).filter(([k, v]) => k !== META && Array.isArray(v));
+  if (!presets.length) throw new Error("not a preset");
+  const out = { text, presets, macros: presets.reduce((n, [, v]) => n + v.length, 0) };
+  state.cache.set(item.id, out);
+  return out;
+}
+
+/* ---------- small helpers ---------- */
+function toast(msg, bad) {
+  const t = h("div", { class: "toast" + (bad ? " bad" : "") }, msg);
+  $("#toasts").append(t);
+  setTimeout(() => t.remove(), bad ? 6500 : 4200);
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {
+    const ta = h("textarea", { style: "position:fixed;opacity:0" }); ta.value = text; document.body.append(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { ok = false; } ta.remove(); return ok;
   }
 }
-
-function renderList() {
-  const ul = $("list"), term = $("q").value.trim().toLowerCase();
-  ul.textContent = "";
-  const files = all.filter((f) => f.path.toLowerCase().includes(term));
-  $("count").textContent = all.length ? "(" + all.length + ")" : "";
-  if (!files.length) { const d = document.createElement("div"); d.className = "empty"; d.textContent = all.length ? "No match" : "No files yet"; ul.append(d); return; }
-  let lastPin = null;
-  for (const f of files) {
-    const pn = isPinned(f.path);
-    if (pn !== lastPin && files.some((x) => isPinned(x.path))) { const h = document.createElement("li"); h.className = "hdr"; h.textContent = pn ? "Developer suggestions" : "Community uploads"; ul.append(h); }
-    lastPin = pn;
-    const li = document.createElement("li");
-    const left = document.createElement("div");
-    const a = document.createElement("a");
-    const i = f.path.lastIndexOf("/");
-    a.href = f.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = f.path.slice(i + 1);
-    if (isPinned(f.path)) { li.classList.add("pin"); const b = document.createElement("span"); b.className = "badge"; b.textContent = "DEV"; left.append(b); }
-    left.append(a);
-    if (i > -1) { const d = document.createElement("span"); d.className = "dir"; d.textContent = isPinned(f.path) ? "Developer suggestion · " + f.path.slice(PIN.length, i) : f.path.slice(0, i); left.append(d); }
-    const right = document.createElement("div"); right.className = "actions";
-    const s = document.createElement("span"); s.className = "meta"; s.textContent = fmt(f.size);
-    const c = document.createElement("button"); c.textContent = "Copy link";
-    c.onclick = async () => { try { await navigator.clipboard.writeText(f.url); c.textContent = "Copied"; } catch { c.textContent = "Failed"; } setTimeout(() => c.textContent = "Copy link", 1200); };
-    right.append(s, c);
-    li.append(left, right);
-    ul.append(li);
-  }
+function flashDone(btn, label) {
+  const old = btn.getAttribute("aria-label"), use = btn.querySelector("use"), prev = use.getAttribute("href");
+  btn.classList.add("done"); use.setAttribute("href", "#i-check"); btn.setAttribute("aria-label", label);
+  setTimeout(() => { btn.classList.remove("done"); use.setAttribute("href", prev); btn.setAttribute("aria-label", old); }, 1400);
 }
-
-async function refresh() {
-  $("list").textContent = "";
-  try { all = (await listFiles()).sort((a, b) => (isPinned(b.path) - isPinned(a.path)) || a.path.localeCompare(b.path)); renderList(); }
-  catch (e) { $("list").textContent = "ERROR " + e.message; }
+const unit = (u) => ({ second: "s", seconds: "s", ms: "ms", millisecond: "ms", milliseconds: "ms", minute: "min", minutes: "min", hour: "h", hours: "h" }[String(u || "").toLowerCase()] || (u || ""));
+function cueLine(m) {
+  const when = [];
+  if (m.delayValue !== undefined && m.delayValue !== "") when.push(h("span", {}, ("Every " + m.delayValue + " " + unit(m.delayUnit)).trim()));
+  if (m.startTimeValue !== undefined && m.startTimeValue !== "" && m.startRoundType) when.push(h("span", {}, ("Starts " + m.startTimeValue + " " + unit(m.startTimeUnit) + " into " + m.startRoundType).replace(/\s+/g, " ")));
+  const li = h("li", {}, h("span", { class: "cmd" }, m.command || m.name || "(no command)"), when.length ? h("span", { class: "when" }, ...when) : null);
+  if (m.keybind) li.append(h("span", { class: "key", title: "Keybind" }, String(m.keybind)));
+  return li;
 }
+const countText = (n) => n + (n === 1 ? " macro" : " macros");
+const setCount = (id, p) => { const c = document.querySelector('[data-count="' + CSS.escape(id) + '"]'); if (c && p) c.textContent = countText(p.macros); };
 
-function renderQueue() {
-  const ul = $("queue"); ul.textContent = "";
-  for (const item of queue) {
-    const li = document.createElement("li");
-    const row = document.createElement("div"); row.className = "row";
-    const n = document.createElement("span"); n.className = "name"; n.textContent = item.file.name;
-    item.status = document.createElement("span"); item.status.className = "meta"; item.status.textContent = fmt(item.file.size);
-    row.append(n, item.status);
-    const bar = document.createElement("div"); bar.className = "bar";
-    item.bar = document.createElement("i"); bar.append(item.bar);
-    li.append(row, bar); ul.append(li);
-  }
-  $("go").disabled = !queue.length;
-}
-
-function addFiles(list) {
-  queue = [...queue, ...[...list].map((file) => ({ file }))];
-  renderQueue();
-}
-
-const toBase64 = (file) => new Promise((res, rej) => {
-  const r = new FileReader();
-  r.onload = () => res(r.result.split(",")[1]);
-  r.onerror = () => rej(new Error("read failed"));
-  r.readAsDataURL(file);
-});
-
-function setState(item, text, cls, pct) {
-  item.status.textContent = text; item.status.className = "meta " + (cls || "");
-  if (pct != null) item.bar.style.width = pct + "%";
-}
-
-function put(url, body, onProgress) {
-  return new Promise((resolve) => {
-    const x = new XMLHttpRequest();
-    x.open("PUT", url);
-    x.setRequestHeader("Authorization", "Bearer " + cfg.token);
-    x.setRequestHeader("Accept", "application/vnd.github+json");
-    x.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total * 100);
-    x.onload = () => resolve(x.status);
-    x.onerror = () => resolve(0);
-    x.send(body);
+/* ---------- list ---------- */
+function visible() {
+  const q = state.q.trim().toLowerCase();
+  return state.items.filter((i) => {
+    if (state.filter !== "all" && i.kind !== state.filter) return false;
+    if (!q) return true;
+    const loaded = state.cache.get(i.id);
+    const cmds = loaded ? loaded.presets.flatMap(([, v]) => v.map((m) => (m.command || "") + " " + (m.name || ""))).join(" ") : "";
+    return (i.title + " " + i.description + " " + i.path + " " + cmds).toLowerCase().includes(q);
   });
 }
 
-async function uploadOne(item) {
-  const f = item.file;
-  if (f.size > cfg.max_bytes) return setState(item, "Too big (max " + fmt(cfg.max_bytes) + ")", "bad", 0);
-  if (!/^[A-Za-z0-9][A-Za-z0-9._ -]{0,99}$/.test(f.name) || f.name.includes("..")) return setState(item, "Invalid name (letters, numbers, . _ - space)", "bad", 0);
-  const url = `https://api.github.com/repos/${cfg.repo}/contents/uploads/${encodeURIComponent(f.name)}`;
-  setState(item, "Checking...", "", 0);
-  const check = await fetch(url + "?ref=" + cfg.branch, { headers: { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" }, cache: "no-store" });
-  if (check.status === 200) return setState(item, "Skipped, already exists", "warn", 100);
-  if (check.status === 401) return setState(item, "Rejected by GitHub (token invalid)", "bad", 0);
-  if (check.status !== 404) return setState(item, "Failed (check " + check.status + ")", "bad", 0);
-  setState(item, "Uploading...", "", 0);
-  const body = JSON.stringify({ message: "upload " + f.name, content: await toBase64(f), branch: cfg.branch });
-  const status = await put(url, body, (p) => setState(item, "Uploading " + Math.round(p) + "%", "", p));
-  if (status === 201) setState(item, "Uploaded, link live in about a minute", "ok", 100);
-  else setState(item, status === 0 ? "Network error" : "Failed (" + status + ")", "bad", 0);
+function itemEl(item) {
+  const open = state.open.has(item.id);
+  const sheetId = sid(item.id);
+  const metaCount = h("span", { "data-count": item.id });
+  const loaded = state.cache.get(item.id);
+  if (loaded) metaCount.textContent = countText(loaded.macros);
+  const folder = item.path.includes("/") ? item.path.slice(0, item.path.lastIndexOf("/")) : "";
+  const head = h("button", { class: "head", type: "button", "aria-expanded": String(open), "aria-controls": sheetId, onclick: () => toggle(item) },
+    h("span", { class: "chev" }, svg("chev")),
+    h("span", {},
+      h("span", { class: "title" }, item.title, item.kind === "dev" ? h("span", { class: "badge" }, "Developer") : null),
+      item.description ? h("span", { class: "desc" }, item.description) : null,
+      h("span", { class: "meta" }, metaCount, item.size != null ? h("span", {}, fmtBytes(item.size)) : null, folder ? h("span", { class: "path" }, folder) : null)));
+  const act = (icon, label, fn) => { const b = h("button", { class: "btn quiet icon", type: "button", "aria-label": label, title: label }, svg(icon)); b.addEventListener("click", () => fn(b)); return b; };
+  const acts = h("div", { class: "acts" },
+    act("copy", "Copy for Import", async (b) => {
+      try {
+        const p = await loadPreset(item); const o = {}; p.presets.forEach(([k, v]) => { o[k] = v; });
+        if (await copyText(JSON.stringify(o))) { flashDone(b, "Copied"); toast("Copied. In the macro GUI, choose Import and paste."); } else toast("Could not copy to the clipboard.", true);
+      } catch (e) { toast("Could not load that preset.", true); }
+    }),
+    act("down", "Download file", async () => {
+      try {
+        const p = await loadPreset(item);
+        const a = h("a", { href: URL.createObjectURL(new Blob([p.text], { type: "application/json" })), download: item.file });
+        document.body.append(a); a.click(); a.remove();
+      } catch (e) { toast("Could not load that preset.", true); }
+    }),
+    act("link", "Copy link to the file", async (b) => { if (await copyText(rawUrl(item.path))) flashDone(b, "Link copied"); else toast("Could not copy to the clipboard.", true); }));
+  const body = h("div", {});
+  const wrap = h("div", { class: "sheet", id: sheetId, role: "region", "aria-label": item.title + " commands" }, body);
+  const li = h("li", { class: "item " + item.kind + (open ? " open" : "") + (state.fresh === item.id ? " fresh" : ""), "data-id": item.id }, h("div", { class: "row" }, head, acts), wrap);
+  if (open) fillSheet(item, body);
+  return li;
 }
 
-$("go").onclick = async () => {
-  $("go").disabled = true;
-  for (const item of queue) { try { await uploadOne(item); } catch (e) { setState(item, "Error " + e.message, "bad"); } }
-  queue = []; $("file").value = "";
-  await refresh();
-  $("go").disabled = true;
-};
-
-const drop = $("drop");
-$("file").onchange = (e) => addFiles(e.target.files);
-["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
-["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
-drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
-$("q").oninput = renderList;
-$("refresh").onclick = refresh;
-
-function showLua() {
-  $("lua").textContent = `local HttpService = game:GetService("HttpService")
-local api = "https://api.github.com/repos/${cfg.repo}"
--- list everything (developer_suggestion/ entries are pinned first by the UI)
-local tree = HttpService:JSONDecode(game:HttpGet(api .. "/git/trees/${cfg.branch}?recursive=1"))
-for _, e in ipairs(tree.tree) do
-  if e.type == "blob" and e.path:sub(1, 8) == "uploads/" and e.path:sub(-5) == ".json" then print(e.path, e.sha) end
-end
--- read one file: JSON with base64 "content"
-local file = HttpService:JSONDecode(game:HttpGet(api .. "/contents/uploads/<path>?ref=${cfg.branch}"))`;
+async function fillSheet(item, body) {
+  body.textContent = "";
+  body.append(h("p", { class: "sheet-note" }, "Loading commands"));
+  try {
+    const p = await loadPreset(item);
+    body.textContent = "";
+    for (const [name, macros] of p.presets) {
+      const ul = h("ul", { class: "cues", "aria-label": name });
+      macros.filter((m) => m && typeof m === "object").forEach((m) => ul.append(cueLine(m)));
+      body.append(ul);
+    }
+    setCount(item.id, p);
+  } catch (e) {
+    body.textContent = "";
+    body.append(h("p", { class: "sheet-note bad" }, "This file could not be read as a preset.", h("button", { class: "btn", type: "button", onclick: () => { state.cache.delete(item.id); fillSheet(item, body); } }, "Try again")));
+  }
 }
 
-loadConfig().then(showLua).then(refresh).catch((e) => { $("list").textContent = "ERROR " + e.message; });
+function toggle(item) {
+  const open = !state.open.has(item.id);
+  if (open) state.open.add(item.id); else state.open.delete(item.id);
+  const li = document.querySelector('.item[data-id="' + CSS.escape(item.id) + '"]');
+  if (!li) return;
+  li.classList.toggle("open", open);
+  li.querySelector(".head").setAttribute("aria-expanded", String(open));
+  if (open) fillSheet(item, li.querySelector(".sheet > div"));
+}
+
+function syncSeg() { document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.f === state.filter))); }
+
+function render() {
+  const ul = $("#list"); ul.textContent = ""; ul.setAttribute("aria-busy", "false");
+  const dev = state.items.filter((i) => i.kind === "dev").length, com = state.items.length - dev;
+  $("#n-all").textContent = state.items.length; $("#n-dev").textContent = dev; $("#n-community").textContent = com;
+  $("#status").textContent = state.error ? "Could not load" : dev + " developer " + (dev === 1 ? "suggestion" : "suggestions") + ", " + com + " community " + (com === 1 ? "preset" : "presets");
+  if (state.error) {
+    ul.append(h("li", { class: "state" }, h("strong", {}, "Presets did not load"), h("p", {}, state.error + " GitHub may be limiting requests from your network. Wait a minute and try again."), h("button", { class: "btn primary", type: "button", onclick: refresh }, "Try again")));
+    return;
+  }
+  const list = visible();
+  if (state.partial) ul.append(h("li", { class: "state" }, h("p", {}, state.partial + " The rest is shown below.")));
+  if (!list.length) {
+    const none = state.q || state.filter !== "all";
+    ul.append(h("li", { class: "state" },
+      h("strong", {}, none ? "Nothing matches" : "No presets yet"),
+      h("p", {}, none ? "Try a different word, or show all presets." : "Be the first to share one. Paste an exported preset in the form."),
+      none ? h("button", { class: "btn", type: "button", onclick: () => { $("#q").value = ""; state.q = ""; state.filter = "all"; syncSeg(); render(); } }, "Clear search and filter")
+        : h("button", { class: "btn primary", type: "button", onclick: () => $("#json").focus() }, "Share a preset")));
+    return;
+  }
+  let last = null;
+  const showGroups = state.filter === "all" && state.items.some((i) => i.kind === "dev") && state.items.some((i) => i.kind === "community");
+  for (const item of list) {
+    if (showGroups && item.kind !== last) { ul.append(h("li", { class: "group" }, item.kind === "dev" ? "From the developer" : "From the community")); last = item.kind; }
+    ul.append(itemEl(item));
+  }
+  state.fresh = null;
+}
+
+async function prefetch() {
+  const queue = state.items.filter((i) => !state.cache.has(i.id));
+  const worker = async () => {
+    for (let i = queue.shift(); i; i = queue.shift()) {
+      try { await loadPreset(i); setCount(i.id, state.cache.get(i.id)); } catch (e) { /* the sheet reports it when opened */ }
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+}
+
+let firstLoad = true;
+async function refresh() {
+  $("#list").setAttribute("aria-busy", "true");
+  $("#status").textContent = "Loading presets";
+  try {
+    const r = await loadItems();
+    state.items = r.items; state.partial = r.partial; state.error = "";
+    // open the first developer suggestion on arrival so the page starts with real content
+    if (firstLoad) { firstLoad = false; const first = state.items.find((i) => i.kind === "dev"); if (first) state.open.add(first.id); }
+    const dirs = new Set();
+    state.items.filter((i) => i.kind === "community" && i.path.includes("/")).forEach((i) => dirs.add(i.path.slice(0, i.path.lastIndexOf("/"))));
+    const dl = $("#folders"); dl.textContent = ""; [...dirs].sort().forEach((d) => dl.append(h("option", { value: d })));
+  } catch (e) { state.items = []; state.error = "GitHub answered " + ((String(e.message).match(/\d{3}/) || [])[0] || "with an error") + "."; }
+  render();
+  prefetch();
+}
+
+/* ---------- composer ---------- */
+const cleanName = (n) => (n.replace(/[^A-Za-z0-9._ -]/g, "_").replace(/^[._\s-]+/, "").slice(0, 80)) || "preset";
+function cleanFolder(s) {
+  const parts = s.replace(/\\/g, "/").split("/").map((x) => x.trim()).filter(Boolean);
+  if (!parts.length || parts.length > 6) return null;
+  for (const seg of parts) if (seg === "." || seg === ".." || !/^[A-Za-z0-9._ -]+$/.test(seg) || seg.length > 60) return null;
+  const joined = parts.join("/");
+  if ((joined + "/").toLowerCase().startsWith(devFolder().toLowerCase())) return null;
+  return joined;
+}
+const comp = { obj: null, name: "", error: "" };
+
+function validate() {
+  const text = $("#json").value.trim(); comp.obj = null; comp.error = "";
+  const v = $("#verdict"); v.className = "verdict"; v.textContent = "";
+  if (text) {
+    if (new Blob([text]).size > cfg.max_bytes) comp.error = "That is larger than " + fmtBytes(cfg.max_bytes) + ".";
+    else {
+      try {
+        const o = JSON.parse(text);
+        if (!o || typeof o !== "object" || Array.isArray(o)) throw new Error("A preset file is an object with a name and a list of macros.");
+        const presets = Object.entries(o).filter(([k, val]) => k !== META && Array.isArray(val) && val.length && val.every((m) => m && typeof m === "object" && !Array.isArray(m)));
+        if (!presets.length) throw new Error("No macros found. Export a saved preset from the macro GUI and paste it here.");
+        comp.obj = o; comp.name = cleanName(presets[0][0]);
+        const n = presets.reduce((a, [, val]) => a + val.length, 0);
+        v.className = "verdict ok"; v.replaceChildren(svg("check"), presets[0][0] + ", " + countText(n));
+        if (!$("#desc").value && o[META] && typeof o[META].description === "string") { $("#desc").value = cleanDesc(o[META].description); countDesc(); }
+      } catch (e) { comp.error = e instanceof SyntaxError ? "That is not valid JSON. Copy the whole preset again." : e.message; }
+    }
+  }
+  if (comp.error) { v.className = "verdict bad"; v.textContent = comp.error; }
+  updateTarget();
+}
+function countDesc() { $("#count").textContent = Array.from($("#desc").value).length + "/" + maxDesc(); }
+function updateTarget() {
+  const f = cleanFolder($("#folder").value), t = $("#target");
+  $("#folder").setAttribute("aria-invalid", f ? "false" : "true");
+  t.textContent = f ? uploadsDir() + "/" + f + "/" + (comp.name || "name") + ".json" : "Use letters, numbers, . _ - and space. Nest folders with /, but not inside the developer folder.";
+  t.style.color = f ? "" : "var(--bad)";
+  $("#go").disabled = !(comp.obj && f);
+}
+
+async function upload() {
+  const btn = $("#go"), f = cleanFolder($("#folder").value);
+  if (!comp.obj || !f) return;
+  btn.disabled = true; btn.querySelector("span").textContent = "Uploading";
+  try {
+    const obj = {}; Object.entries(comp.obj).forEach(([k, v]) => { if (k !== META) obj[k] = v; });
+    const desc = cleanDesc($("#desc").value);
+    if (desc) obj[META] = { description: desc };
+    const body = JSON.stringify(obj);
+    if (new Blob([body]).size > cfg.max_bytes) throw new Error("That is larger than " + fmtBytes(cfg.max_bytes) + ".");
+    const headers = { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" };
+    const base = apiBase() + "/contents/" + uploadsDir() + "/" + encPath(f) + "/";
+    let file = comp.name + ".json";
+    const exists = async (n) => (await fetch(base + encodeURIComponent(n) + "?ref=" + cfg.branch, { headers, cache: "no-store" })).status === 200;
+    if (await exists(file)) file = comp.name + "-" + Math.floor(Date.now() / 1000) + ".json";
+    const res = await fetch(base + encodeURIComponent(file), { method: "PUT", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ message: "upload " + file, content: textToB64(body), branch: cfg.branch }) });
+    if (res.status === 401) throw new Error("GitHub rejected the upload token. Tell the developer it needs renewing.");
+    if (res.status !== 201) throw new Error("GitHub answered " + res.status + ". Try again in a moment.");
+    const rel = f + "/" + file;
+    if (desc) state.local.set(rel, desc);
+    state.fresh = rel; state.filter = "all"; state.q = ""; $("#q").value = ""; syncSeg();
+    $("#json").value = ""; $("#desc").value = ""; countDesc(); validate();
+    toast("Uploaded as " + file + "." + (desc ? " The description reaches everyone within a minute." : ""));
+    await refresh();
+    const el = document.querySelector('.item[data-id="' + CSS.escape(rel) + '"]');
+    if (el) el.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  } catch (e) { toast(e.message, true); }
+  btn.querySelector("span").textContent = "Upload preset"; updateTarget();
+}
+
+function bind() {
+  $("#refresh").onclick = refresh;
+  $("#q").oninput = (e) => { state.q = e.target.value; render(); };
+  document.querySelectorAll(".seg button").forEach((b) => { b.onclick = () => { state.filter = b.dataset.f; syncSeg(); render(); }; });
+  document.addEventListener("keydown", (e) => { if (e.key === "/" && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) { e.preventDefault(); $("#q").focus(); } });
+  $("#json").oninput = validate;
+  $("#desc").oninput = countDesc;
+  $("#folder").oninput = updateTarget;
+  $("#go").onclick = upload;
+  $("#pick").onclick = () => $("#file").click();
+  const readFile = async (file) => {
+    if (!file) return;
+    if (!exts().some((x) => file.name.toLowerCase().endsWith(x))) { toast("Choose a " + exts().join(" or ") + " file.", true); return; }
+    $("#json").value = await file.text(); validate();
+  };
+  $("#file").onchange = (e) => { readFile(e.target.files[0]); e.target.value = ""; };
+  const ta = $("#json");
+  ["dragenter", "dragover"].forEach((ev) => ta.addEventListener(ev, (e) => { e.preventDefault(); ta.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach((ev) => ta.addEventListener(ev, (e) => { e.preventDefault(); ta.classList.remove("drag"); }));
+  ta.addEventListener("drop", (e) => readFile(e.dataTransfer.files[0]));
+}
+
+(async () => {
+  try {
+    await loadConfig();
+    $("#folder").value = cfg.upload_dir || "user_suggestion";
+    $("#desc").maxLength = maxDesc(); countDesc();
+    $("#limit").textContent = "Up to " + fmtBytes(cfg.max_bytes);
+    bind(); validate();
+    await refresh();
+  } catch (e) {
+    $("#list").setAttribute("aria-busy", "false");
+    $("#list").replaceChildren(h("li", { class: "state" }, h("strong", {}, "The page could not start"), h("p", {}, "endpoint.json did not load (" + e.message + "). Reload the page.")));
+    $("#status").textContent = "Could not load";
+  }
+})();
 </script>
 </body>
 </html>
