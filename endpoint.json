@@ -6,7 +6,7 @@
   "list": "https://api.github.com/repos/Vraigos/shared_config/git/trees/main?recursive=1",
   "upload": {
     "method": "PUT",
-    "url": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{name}",
+    "url": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/user_suggestion/Evade_Cmd_Macro/{name}",
     "headers": {
       "Accept": "application/vnd.github+json",
       "Authorization": "Bearer <token_parts joined in order>"
@@ -16,7 +16,7 @@
       "content": "<base64>",
       "branch": "main"
     },
-    "rules": "create only, existing files are never overwritten, max 25 MB per file, name must be url-encoded"
+    "rules": "create only, existing files are never overwritten, max 25 MB per file, name must be url-encoded; the folder comes from upload_dir"
   },
   "token_parts": [
     "github_pat_11CMDUOHY0YS8oc9MHyLQN_6GHXVIdciq9",
@@ -24,12 +24,20 @@
   ],
   "max_bytes": 26214400,
   "pinned_folder": "uploads/developer_suggestion",
-  "order": "files.json lists pinned (developer_suggestion) entries first, then the rest A-Z",
   "read": "https://api.github.com/repos/Vraigos/shared_config/contents/uploads/{path}?ref=main",
-  "read_note": "GitHub API contents endpoint: JSON with base64 'content'. Entries under developer_suggestion/ are pinned first.",
   "uploads_dir": "uploads",
   "extensions": [
     ".json"
   ],
-  "config_note": "The Roblox script reads everything from this file: repo, branch, uploads_dir, pinned_folder, extensions, max_bytes, list, read, upload and token_parts."
+  "upload_dir": "user_suggestion/Evade_Cmd_Macro",
+  "developer": {
+    "folder": "developer_suggestion/",
+    "manifest": "developer_suggestions.json",
+    "manifest_raw": "https://raw.githubusercontent.com/Vraigos/shared_config/main/developer_suggestions.json",
+    "raw": "https://raw.githubusercontent.com/Vraigos/shared_config/main/uploads/{path}",
+    "note": "Developer suggestions are listed by the manifest and read from raw.githubusercontent.com only. They are never read from or written through the upload API route."
+  },
+  "descriptions_path": "descriptions.json",
+  "max_description": 200,
+  "config_note": "The Roblox script reads everything from this file: repo, branch, uploads_dir, upload_dir, developer, descriptions_path, max_description, extensions, max_bytes, list, read and token_parts."
 }

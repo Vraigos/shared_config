@@ -1,0 +1,10 @@
+{
+  "_note": "Maintained by the developer. Paths are relative to uploads/. The Roblox script reads this file and each preset from raw.githubusercontent.com.",
+  "items": [
+    {
+      "path": "developer_suggestion/Evade_Cmd_Macro/AutoFarm.json",
+      "name": "AutoFarm",
+      "description": ""
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+name: index
+# builds descriptions.json (path -> description) from each community preset's _meta.description
+on:
+  push:
+    branches: [main]
+    paths: ['uploads/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: index
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: build descriptions index
+        run: |
+          set -euo pipefail
+          dev=$(jq -r '.developer.folder // "developer_suggestion/"' endpoint.json)
+          max=$(jq -r '.max_description // 200' endpoint.json)
+          out=$(jq -r '.descriptions_path // "descriptions.json"' endpoint.json)
+          echo '{}' > "$RUNNER_TEMP/idx.json"
+          while IFS= read -r -d '' f; do
+            rel="${f#uploads/}"
+            case "$rel" in "$dev"*) continue;; esac
+            d=$(jq -r --argjson m "$max" 'if type=="object" and (._meta|type)=="object" and (._meta.description|type)=="string" then (._meta.description | gsub("[\\x00-\\x1f]";" ") | gsub("^\\s+|\\s+$";"") | .[0:$m]) else "" end' "$f" 2>/dev/null || true)
+            if [ -n "$d" ]; then
+              jq --arg k "$rel" --arg v "$d" '. + {($k): $v}' "$RUNNER_TEMP/idx.json" > "$RUNNER_TEMP/idx2.json"
+              mv "$RUNNER_TEMP/idx2.json" "$RUNNER_TEMP/idx.json"
+            fi
+          done < <(find uploads -type f -name '*.json' -print0 | sort -z)
+          jq -S . "$RUNNER_TEMP/idx.json" > "$RUNNER_TEMP/descriptions.json"
+          if [ -f "$out" ] && cmp -s "$RUNNER_TEMP/descriptions.json" "$out"; then echo "index unchanged"; exit 0; fi
+          cp "$RUNNER_TEMP/descriptions.json" "$out"
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -- "$out"
+          git commit -m "update descriptions index"
+          git pull --rebase origin main
+          git push origin HEAD:main

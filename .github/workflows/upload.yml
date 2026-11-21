@@ -27,13 +27,14 @@ jobs:
           re='^[A-Za-z0-9][A-Za-z0-9._ -]{0,99}$'
           if ! [[ "$NAME" =~ $re ]] || [[ "$NAME" == *..* ]]; then echo "bad file name"; exit 1; fi
           if [ -z "$CONTENT" ]; then echo "no content"; exit 1; fi
-          mkdir -p uploads
-          if [ -e "uploads/$NAME" ]; then echo "file already exists"; exit 1; fi
+          DIR="uploads/$(jq -r '.upload_dir // "user_suggestion"' endpoint.json)"
+          mkdir -p "$DIR"
+          if [ -e "$DIR/$NAME" ]; then echo "file already exists"; exit 1; fi
           printf '%s' "$CONTENT" | base64 -d > "$RUNNER_TEMP/up.bin"
-          cp -n "$RUNNER_TEMP/up.bin" "uploads/$NAME"
+          cp -n "$RUNNER_TEMP/up.bin" "$DIR/$NAME"
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add -- "uploads/$NAME"
+          git add -- "$DIR/$NAME"
           git commit -m "upload $NAME"
           git pull --rebase origin main
           git push origin HEAD:main
