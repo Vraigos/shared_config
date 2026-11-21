@@ -39,6 +39,10 @@
   .files .dir { color:var(--muted); font-size:12px; display:block; }
   .actions { display:flex; align-items:center; gap:10px; }
   .empty { color:var(--muted); text-align:center; padding:16px 0; }
+  .pin { background:color-mix(in srgb,var(--accent) 14%,transparent); border-radius:8px; padding:10px 8px !important; margin:2px 0; }
+  .badge { font-size:11px; font-weight:600; color:var(--accent-fg); background:var(--accent); border-radius:99px; padding:1px 8px; margin-right:6px; vertical-align:middle; }
+  .hdr { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.05em; padding:10px 0 2px; list-style:none; }
+  pre.code { background:color-mix(in srgb,var(--text) 6%,transparent); border:1px solid var(--line); border-radius:8px; padding:10px; overflow-x:auto; font-size:12.5px; margin:8px 0 0; }
   .endpoint { font-size:13px; color:var(--muted); }
   .endpoint a { color:var(--accent); }
 </style>
@@ -65,12 +69,20 @@
     <ul class="files" id="list"></ul>
   </section>
 
+  <section class="card">
+    <h2>Use in Roblox</h2>
+    <div class="meta" style="white-space:normal">files.json lists everything, developer suggestions first. Fetch a config by its link.</div>
+    <pre class="code" id="lua"></pre>
+  </section>
+
   <p class="endpoint">API: <a href="endpoint.json">endpoint.json</a> (upload) · <a href="files.json">files.json</a> (list)</p>
 </main>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => n < 1024 ? n + " B" : n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(1) + " MB";
+const PIN = "developer_suggestion/";
+const isPinned = (p) => p.startsWith(PIN);
 const encPath = (p) => p.split("/").map(encodeURIComponent).join("/");
 
 let cfg = null, all = [], queue = [];
@@ -105,14 +117,19 @@ function renderList() {
   const files = all.filter((f) => f.path.toLowerCase().includes(term));
   $("count").textContent = all.length ? "(" + all.length + ")" : "";
   if (!files.length) { const d = document.createElement("div"); d.className = "empty"; d.textContent = all.length ? "No match" : "No files yet"; ul.append(d); return; }
+  let lastPin = null;
   for (const f of files) {
+    const pn = isPinned(f.path);
+    if (pn !== lastPin && files.some((x) => isPinned(x.path))) { const h = document.createElement("li"); h.className = "hdr"; h.textContent = pn ? "Developer suggestions" : "Community uploads"; ul.append(h); }
+    lastPin = pn;
     const li = document.createElement("li");
     const left = document.createElement("div");
     const a = document.createElement("a");
     const i = f.path.lastIndexOf("/");
     a.href = f.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = f.path.slice(i + 1);
+    if (isPinned(f.path)) { li.classList.add("pin"); const b = document.createElement("span"); b.className = "badge"; b.textContent = "DEV"; left.append(b); }
     left.append(a);
-    if (i > -1) { const d = document.createElement("span"); d.className = "dir"; d.textContent = f.path.slice(0, i); left.append(d); }
+    if (i > -1) { const d = document.createElement("span"); d.className = "dir"; d.textContent = isPinned(f.path) ? "Developer suggestion · " + f.path.slice(PIN.length, i) : f.path.slice(0, i); left.append(d); }
     const right = document.createElement("div"); right.className = "actions";
     const s = document.createElement("span"); s.className = "meta"; s.textContent = fmt(f.size);
     const c = document.createElement("button"); c.textContent = "Copy link";
@@ -125,7 +142,7 @@ function renderList() {
 
 async function refresh() {
   $("list").textContent = "";
-  try { all = (await listFiles()).sort((a, b) => a.path.localeCompare(b.path)); renderList(); }
+  try { all = (await listFiles()).sort((a, b) => (isPinned(b.path) - isPinned(a.path)) || a.path.localeCompare(b.path)); renderList(); }
   catch (e) { $("list").textContent = "ERROR " + e.message; }
 }
 
@@ -207,7 +224,16 @@ drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
 $("q").oninput = renderList;
 $("refresh").onclick = refresh;
 
-loadConfig().then(refresh).catch((e) => { $("list").textContent = "ERROR " + e.message; });
+function showLua() {
+  $("lua").textContent = `local HttpService = game:GetService("HttpService")
+local base = "${cfg.site}"
+local list = HttpService:JSONDecode(game:HttpGet(base .. "files.json"))
+-- list[i] = { name, path, size, url, pinned }  (pinned = developer suggestion, always first)
+for _, f in ipairs(list) do print(f.pinned and "[DEV]" or "", f.path) end
+local data = HttpService:JSONDecode(game:HttpGet(base .. list[1].url))`;
+}
+
+loadConfig().then(showLua).then(refresh).catch((e) => { $("list").textContent = "ERROR " + e.message; });
 </script>
 </body>
 </html>
