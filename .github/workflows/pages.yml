@@ -21,7 +21,6 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
         run: |
-          echo "maintainer move: guard bypassed for this commit only"; exit 0
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then exit 0; fi
           BAD=$(git diff --name-only --no-renames --diff-filter=MDT "$BEFORE" HEAD -- uploads/)
           if [ -n "$BAD" ]; then
